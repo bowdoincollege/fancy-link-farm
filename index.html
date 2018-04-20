@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Facny Link Farm</title>
+		<meta name="author" content="Stephen Houser">
+		<meta content="Fancy links in a table" />
+
+		<!-- jQuery -->
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.0.min.js"></script>
+
+		<!-- jQuery Data Tables -->
+		<script type="text/javascript" src="http://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+		<link rel="stylesheet" href="http://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css">
+
+		<!-- Bootstrap Tables -->
+		<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+
+		<!-- YAML Parser; convert YAML to JavaScript object. -->
+		<script type="text/javascript" src="https://rawgit.com/jeremyfa/yaml.js/develop/dist/yaml.min.js"></script>
+
+		<style>
+			body {
+				width: 90%;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			table a {
+    			display:block;
+    			text-decoration:none;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page-content">
+			<div class="wrapper">
+				<header class='header'>
+					<div class='container-fluid'>
+						<h1>Facny Link Farm</h1>
+						<hr />
+					</div>
+				</header>
+
+				<div class="container-fluid">
+					<p>This is a facny way to display a page full of links. It uses 
+							<a href="http://jquery.com">jQuery</a>, 
+							<a href="https://datatables.net">jQuery Data Tables</a>, 
+							<a href="https://getbootstrap.com">Bootstrap</a> (for a nice look), 
+							and a <a href="https://github.com/jeremyfa/yaml.js">YAML parser</a>. 
+							The links are configured in a YAML data file <a href="links.yaml">links.yaml</a>
+							and read using asynchronous JavaScript calls (aka AJAX).</p>
+
+					<table id="links" class="display" cellspacing="0" width="100%">
+						<thead>
+							<tr>
+								<th>Title</th>
+								<th>Author</th>
+								<th>Description</th>
+								<th>Notes</th>
+							</tr>
+						</thead>
+						<tfoot>
+							<tr>
+								<th>Title</th>
+								<th>Author</th>
+								<th>Description</th>
+								<th>Notes</th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+
+				<footer class='footer'>
+					<div class='container-fluid'>
+						<hr />
+						<p class='pull-right'><a href='https://github.com/bowdoincollege/fancy-link-farm'>Fancy Link Farm on GitHub</a></p>
+					</div>
+				</footer>
+			</div>
+		</div>
+
+		<script type="text/javascript">
+			// Modify these if all your links have the same prefix or postfix.
+			// It will make your data file a little cleaner
+			const link_prefix = "";		// prepended to links from data file
+			const link_postfix = "";	// appended to links from data file
+
+			function model_url(row) {	// render full url based on partial url in yaml data
+				if (row["url"] === undefined || row["url"] === null) {
+					return "";
+				} else {
+					return link_prefix + row["url"] + link_postfix;
+				}
+			}
+
+			function nullable_text(text) {
+				if (text === undefined || text === null) {
+					return "&nbsp;";
+				} else {
+					return text;
+				}
+			}
+
+			$(document).ready(function() {
+				$('#links').DataTable( {
+					"ajax": {
+						"url": "links.yaml",
+						"dataType": "text",
+						"dataSrc": function(yaml) {
+							var links = YAML.parse(yaml);
+							return links;
+						}
+					},
+					"paging": false,
+					"order": [[0, "desc"]],
+					"columns": [
+						{ "data": "title", "defaultContent": "" },
+						{ "data": "author", "defaultContent": ""},
+						{ "data": "description", "defaultContent": "" },
+						{ "data": "notes", "defaultContent": "", "width": "25%" }
+					],
+					"columnDefs": [
+						{
+							"targets": [0, 1, 2, 3],	// render each cell as a link
+							"render": function (data, type, row) {
+								return "<a href='" + model_url(row) + "'>" + nullable_text(data) + "</a>";
+							}
+						}
+					]
+				});
+
+			});
+		</script>
+	</body>
+</html>
